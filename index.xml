@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>NSpeed</title>
+    <link>https://nspeed.app/</link>
+    <description>Recent content on NSpeed</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
+    
+	<atom:link href="https://nspeed.app/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>About Nspeed</title>
+      <link>https://nspeed.app/about-nspeed/</link>
+      <pubDate>Wed, 24 Jun 2020 10:42:30 +0200</pubDate>
+      
+      <guid>https://nspeed.app/about-nspeed/</guid>
+      <description>NSpeed is high performance multi-threaded network bandwidth measurement tool.
+It&amp;rsquo;s an open-source, free, for non profit, collaborative application.
+It originated from the community at https://lafibre.info
+Learn more and contribute on GitHub.</description>
+    </item>
+    
+  </channel>
+</rss>
