@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>NSpeed</title>
@@ -7,9 +7,20 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
+    <lastBuildDate>Thu, 25 Jun 2020 09:12:26 +0200</lastBuildDate>
     
 	<atom:link href="https://nspeed.app/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Download</title>
+      <link>https://nspeed.app/wip/</link>
+      <pubDate>Thu, 25 Jun 2020 09:12:26 +0200</pubDate>
+      
+      <guid>https://nspeed.app/wip/</guid>
+      <description>A preview version will be available on July 3rd 2020
+Check back here soon</description>
+    </item>
     
     <item>
       <title>About Nspeed</title>
