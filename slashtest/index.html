@@ -1,0 +1,276 @@
+<html>
+<body>
+<script type="module">
+  import {markdownTable} from "https://cdn.skypack.dev/markdown-table@3.0.0";
+
+  const Urls = [
+    "/file",
+    "/file/",
+    "/file.html",
+    "/folder",
+    "/folder/",
+    "/folder/index.html",
+    "/both",
+    "/both/",
+    "/both.html",
+    "/both/index.html",
+  ];
+
+  const Deployments = [
+    /////////////////////////////////////////////////////////////////////////////////////////////
+
+    {
+      name: "GitHub Pages",
+      settings: "" ,
+      url: "https://slorber.github.io/trailing-slash-guide"
+    },
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+
+    {
+      name: "Netlify",
+      settings: "Default: Pretty Urls on",
+      url: "https://trailing-slash-guide-pretty-url-enabled.netlify.app"
+    },
+    {
+      name: "Netlify",
+      settings: "Pretty Urls off",
+      url: "https://trailing-slash-guide-pretty-url-disabled.netlify.app"
+    },
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+
+    {
+      name: "Vercel",
+      settings: "Default: cleanUrls=false trailingSlash=undefined ",
+      url: "https://vercel-cleanurls-false-trailingslash-undefined.vercel.app"
+    },
+    {
+      name: "Vercel",
+      settings: "cleanUrls=false trailingSlash=false",
+      url: "https://vercel-cleanurls-false-trailingslash-false.vercel.app"
+    },
+    {
+      name: "Vercel",
+      settings: "cleanUrls=false trailingSlash=true",
+      url: "https://vercel-cleanurls-false-trailingslash-true.vercel.app"
+    },
+    {
+      name: "Vercel",
+      settings: "cleanUrls=true trailingSlash=undefined",
+      url: "https://vercel-cleanurls-true-trailingslash-undefined.vercel.app"
+    },
+    {
+      name: "Vercel",
+      settings: "cleanUrls=true trailingSlash=false",
+      url: "https://vercel-cleanurls-true-trailingslash-false.vercel.app"
+    },
+    {
+      name: "Vercel",
+      settings: "cleanUrls=true trailingSlash=true",
+      url: "https://vercel-cleanurls-true-trailingslash-true.vercel.app"
+    },
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+
+    {
+      name: "Cloudflare Pages",
+      settings: "",
+      url: "https://trailing-slash-guide.pages.dev"
+    },
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+
+    {
+      name: "Render",
+      settings: "",
+      url: "https://trailing-slash-guide.onrender.com"
+    },
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+
+    {
+      name: "Azure Static Web Apps",
+      settings: "",
+      url: "https://red-dune-0d2e38c03.azurestaticapps.net"
+    },
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+  ];
+
+  Deployments.forEach(deployment => {
+    if (deployment.url.endsWith("/") ) {
+      throw new Error("Please don't include trailing slash in deployment url: " + JSON.stringify(deployment))
+    }
+  })
+
+
+  // GH pages urls start with /trailing-slash-guide/ => we don't want the baseurl to pollute the result
+  const baseUrlPrefix = window.location.pathname.slice(0,-1); // ignore trailing /
+  console.log({baseUrlPrefix})
+
+  function addBaseUrl(url) {
+    return `${baseUrlPrefix}${url}`;
+  }
+  function removeBaseUrl(url) {
+    return url.replace(baseUrlPrefix,"");
+  }
+
+  async function fetchUrl(url) {
+    // Using {redirect: "manual"} is not a good solution => shows status=0 + redirect url is not accessible
+    const absoluteUrl = addBaseUrl(url);
+    const response = await fetch(absoluteUrl);
+    console.log({url, absoluteUrl, response});
+    return {
+      url,
+      absoluteUrl,
+      status: response.status, // Note: fetch follows redirects and output status=200
+      redirectUrl: response.redirected ? removeBaseUrl(new URL(response.url).pathname) : undefined
+    };
+  }
+
+
+  function formatResultText(result) {
+    return result.status !== 200 ?
+      `💢 ${result.status}`
+      : result.redirectUrl ?
+        `➡️ ${result.redirectUrl}`
+        : '✅'
+  }
+  function formatResultDOM(result) {
+    const a = document.createElement('a');
+    a.appendChild(document.createTextNode(formatResultText(result)));
+    a.href = addBaseUrl(result.absoluteUrl);
+    return a;
+  }
+  function formatResultMarkdown(result) {
+    return `[${formatResultText(result)}](${result.absoluteUrl})`
+  }
+
+
+
+  function addUrlResultToDOM(result) {
+    const div = document.createElement("div");
+
+    const a = document.createElement('a');
+    a.appendChild(document.createTextNode(result.url));
+    a.href = result.absoluteUrl;
+    div.appendChild(a);
+
+    div.appendChild(document.createTextNode(" - "));
+
+    div.appendChild(formatResultDOM(result));
+
+    document.body.appendChild(div);
+  }
+
+  function printMarkdownTable(results) {
+    const markdownTableString = markdownTable([
+      ['Url', 'Result'],
+      ...results.map(result => [result.url, formatResultMarkdown(result)])
+    ]);
+    console.log("\n\n\nmarkdownTableString for current host:\n");
+    console.log(markdownTableString);
+  }
+
+  async function run() {
+    const results = await Promise.all(Urls.map(fetchUrl))
+
+    results.forEach(addUrlResultToDOM);
+
+    printMarkdownTable(results);
+  }
+
+  run().catch(e => {
+    console.error(e);
+    alert("Error, check the console: " + e.message);
+  });
+
+
+  async function runAllDeployments() {
+
+    function corsProxify(url) {
+      // Code: https://github.com/slorber/vercel-proxy/blob/master/api/index.js
+      return `https://slorber-cors-proxy.vercel.app/api?url=${encodeURIComponent(url)}`
+    }
+
+    async function fetchDeploymentUrl(deployment,url) {
+      const absoluteUrl = `${deployment.url}${url}`;
+      const corsProxyUrl = corsProxify(absoluteUrl);
+      const response = await fetch(corsProxyUrl);
+
+      // Mostly for GH pages
+      function removeDeploymentBaseUrl(str) {
+        const baseUrl = new URL(deployment.url).pathname;
+        if (baseUrl === "/") {
+          return str;
+        }
+        return str.replace(baseUrl,"");
+      }
+
+      // cors proxy impl details :'(
+      const finalUrl = response.headers.get("X-Final-Url") ?? absoluteUrl;
+      const redirectUrl = absoluteUrl !== finalUrl ? removeDeploymentBaseUrl(new URL(finalUrl).pathname) : undefined;
+
+      // console.log(redirectUrl)
+
+      const ret = {
+        url,
+        absoluteUrl,
+        status: response.status,
+        redirectUrl,
+      };
+
+      // console.log(response.status,ret,response.url);
+
+      return ret;
+    }
+
+    async function getSingleDeploymentResults(deployment) {
+      return Promise.all(Urls.map(async url => {
+          try {
+              return await fetchDeploymentUrl(deployment,url)
+          } catch (e) {
+              console.error(`fetchDeploymentUrl failure for url=${deployment.url}${url}\n${e.message}`)
+              throw e;
+          }
+      }));
+    }
+
+    async function getAllDeploymentsResults() {
+      return Promise.all(Deployments.map(async deployment => {
+        const results = await getSingleDeploymentResults(deployment);
+        return {deployment,results};
+      }));
+    }
+
+    function printMarkdownTable(allDeploymentsResults) {
+      const markdownTableString = markdownTable([
+        [
+          'Host',
+          'Settings',
+          'Url',
+          ...Urls,
+        ],
+        ...allDeploymentsResults.map(({deployment,results}) => {
+          return [
+            deployment.name,
+            deployment.settings,
+            `[link](${deployment.url})`,
+            ...results.map(formatResultMarkdown)
+          ];
+        }),
+      ]);
+      console.log("\n\n\nmarkdownTableString for all deployments:\n");
+      console.log(markdownTableString);
+    }
+
+    const allDeploymentsResults = await getAllDeploymentsResults();
+    printMarkdownTable(allDeploymentsResults);
+  }
+
+  runAllDeployments();
+
+</script>
+</body>
+</html>
